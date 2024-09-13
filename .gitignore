@@ -9,3 +9,5 @@ example_input.txt
 *.o
 part1
 part2
+*.venv
+venv
