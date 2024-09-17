@@ -2,12 +2,12 @@ import click
 import logging
 import structlog
 
-from day_one import one_one
+from day_one import one_one, one_two
 
-# Map string log levels to structlog log level numbers
-log_levels = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "CRITICAL": 50}
-
-commands = {"one": one_one}
+commands = {
+    "1.1": one_one,
+    "1.2": one_two,
+}
 
 
 def get_all_input(f: click.File) -> list[str]:
@@ -28,6 +28,8 @@ def configure_logging(preferredLevel: str | None = None, defaultLevel=logging.WA
     :param defaultLevel: default logging level if preferredLevel is invalid or missing
     :returns: nothing
     """
+    structlog.stdlib.recreate_defaults()
+
     # Configure structlog
     if preferredLevel:
         log_level = logging.getLevelNamesMapping().get(preferredLevel, defaultLevel)
@@ -37,7 +39,7 @@ def configure_logging(preferredLevel: str | None = None, defaultLevel=logging.WA
     structlog.configure(
         processors=[
             structlog.processors.add_log_level,
-            structlog.dev.ConsoleRenderer(),
+            structlog.dev.ConsoleRenderer(exception_formatter=structlog.dev.rich_traceback),
         ],
         wrapper_class=structlog.make_filtering_bound_logger(log_level),
     )
@@ -52,7 +54,7 @@ def configure_logging(preferredLevel: str | None = None, defaultLevel=logging.WA
     help="Logging level",
 )
 def main(day, input_file, log):
-    configure_logging()
+    configure_logging(log)
 
     puzzle_input = get_all_input(input_file)
     command = commands[day]
