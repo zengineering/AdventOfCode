@@ -2,11 +2,12 @@ import click
 import logging
 import structlog
 
-from days import one_one, one_two
+from days import one_one, one_two, two_one, two_two
 
 commands = {
     "1.1": one_one,
     "1.2": one_two,
+    "2.1": two_one,
 }
 
 
