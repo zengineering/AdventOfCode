@@ -2,7 +2,7 @@ import click
 import logging
 import structlog
 
-from day_one import one_one, one_two
+from days import one_one, one_two
 
 commands = {
     "1.1": one_one,
@@ -56,10 +56,9 @@ def configure_logging(preferredLevel: str | None = None, defaultLevel=logging.WA
 def main(day, input_file, log):
     configure_logging(log)
 
-    puzzle_input = get_all_input(input_file)
     command = commands[day]
     if command is not None:
-        command_output = command(puzzle_input)
+        command_output = command(get_all_input(input_file))
         print(command_output)
 
 
