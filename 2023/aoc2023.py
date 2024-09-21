@@ -8,6 +8,7 @@ commands = {
     "1.1": one_one,
     "1.2": one_two,
     "2.1": two_one,
+    "2.2": two_two,
 }
 
 

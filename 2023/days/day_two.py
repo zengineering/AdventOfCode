@@ -12,8 +12,12 @@ class Game:
     red: int
     green: int
 
-    def is_possible(self, max_red: int, max_green: int, max_blue: int):
+    def is_possible(self, max_red: int, max_green: int, max_blue: int) -> bool:
         return self.red <= max_red and self.green <= max_green and self.blue <= max_blue
+    
+    def power(self) -> int:
+        return self.blue * self.red * self.green
+
 
 def parse_game(line: str):
     game_re = re.compile(r"Game\s+(\d+):\s+(.*)")
@@ -46,5 +50,6 @@ def two_one(puzzle_input: list[str]) -> int:
     games = (parse_game(line) for line in puzzle_input)
     return sum((g.index for g in games if g.is_possible(12, 13, 14)))
 
-def two_two():
-    pass
+def two_two(puzzle_input: list[str]) -> int:
+    games = (parse_game(line) for line in puzzle_input)
+    return sum((g.power() for g in games))
