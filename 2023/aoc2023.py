@@ -1,18 +1,20 @@
 import click
 import logging
 import structlog
+from typing import Iterable
 
-from days import one_one, one_two, two_one, two_two
+from days import one_one, one_two, two_one, two_two, three_one, three_two
 
 commands = {
     "1.1": one_one,
     "1.2": one_two,
     "2.1": two_one,
     "2.2": two_two,
+    "3.1": three_one
 }
 
 
-def get_all_input(f: click.File) -> list[str]:
+def get_all_input(f: click.File) -> Iterable[str]:
     """
     Get puzzle input from the provided file.
 
@@ -22,7 +24,7 @@ def get_all_input(f: click.File) -> list[str]:
     return filter(lambda x: x, map(lambda x: x.strip(), f.readlines()))
 
 
-def configure_logging(preferredLevel: str | None = None, defaultLevel=logging.WARN):
+def configure_logging(preferredLevel: str | None = None, defaultLevel=logging.WARN, no_color: bool = False):
     """
     Configure logging; currently structlog.
 
@@ -41,7 +43,7 @@ def configure_logging(preferredLevel: str | None = None, defaultLevel=logging.WA
     structlog.configure(
         processors=[
             structlog.processors.add_log_level,
-            structlog.dev.ConsoleRenderer(exception_formatter=structlog.dev.rich_traceback),
+            structlog.dev.ConsoleRenderer(exception_formatter=structlog.dev.rich_traceback, colors=not no_color),
         ],
         wrapper_class=structlog.make_filtering_bound_logger(log_level),
     )
@@ -55,13 +57,22 @@ def configure_logging(preferredLevel: str | None = None, defaultLevel=logging.WA
     type=click.Choice(logging.getLevelNamesMapping().keys()),
     help="Logging level",
 )
-def main(day, input_file, log):
-    configure_logging(log)
+@click.option(
+    "--no-color",
+    is_flag=True,
+    help="Disable color in log output."
+)
+def main(day, input_file, log, no_color):
+    configure_logging(log, no_color=no_color)
+    logger = structlog.get_logger()
 
     command = commands[day]
     if command is not None:
-        command_output = command(get_all_input(input_file))
-        print(command_output)
+        try:
+            command_output = command(get_all_input(input_file))
+            print(command_output)
+        except Exception as e:
+            logger.error("Command %s failed.", day, exc_info=True)
 
 
 main()
