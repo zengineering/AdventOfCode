@@ -47,10 +47,10 @@ def parse_game(line: str):
     return Game(int(game), max_counts["blue"], max_counts["red"], max_counts["green"])
         
 
-def two_one(puzzle_input: Iterable[str]) -> int:
+def two_one(puzzle_input: list[str]) -> int:
     games = (parse_game(line) for line in puzzle_input)
     return sum((g.index for g in games if g.is_possible(12, 13, 14)))
 
-def two_two(puzzle_input: Iterable[str]) -> int:
+def two_two(puzzle_input: list[str]) -> int:
     games = (parse_game(line) for line in puzzle_input)
     return sum((g.power() for g in games))
