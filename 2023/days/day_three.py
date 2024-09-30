@@ -1,15 +1,16 @@
+import itertools
+import re
 import string
 import structlog
-import itertools
-from enum import Enum
-from typing import Iterable
 from collections import defaultdict
+from typing import Iterable
 
 
 logger = structlog.get_logger()
 
 digits = set(string.digits)
 symbols = [s for s in string.punctuation if s != '.']
+part_num_re = re.compile(r"(\d+)")
 
 def save_input(puzzle_input: Iterable[str]) -> list[str]:
     return [line for line in puzzle_input]
@@ -35,46 +36,24 @@ def process_part_num(y: int, x0: int, xn: int, schematic: list[list[str]]) -> in
     logger.debug("Neighbors:", n="".join(schematic[y][x] for y, x in neighbors))
 
     # if any neighbor is a symbol, count the part number
-    if any(map(lambda y_x: schematic[y_x[0]][y_x[1]] in symbols, neighbors)):
-        # parse the string into a part number
-        p = int(schematic[y][x0:xn])
-        logger.debug("Found at least one symbol in neighbors", part_num=p)
-        return p
-    else:
-        return None
+    return any(map(lambda y_x: schematic[y_x[0]][y_x[1]] in symbols, neighbors))
         
 
-
-
-
 def three_one(puzzle_input: Iterable[str]) -> int:
-    part_nums = defaultdict(int)
+    part_nums: dict[tuple[int, int, int], int] = {}
+    symbols: set[tuple[int, int]] = set()
     schematic = save_input(puzzle_input)
 
-    # for each row, for each column
+    # for each row...
     for y, line in enumerate(schematic):
-        num_start = None
-        logger.debug("line %d: %s", y, "".join(str(i % 10) for i in range(len(line))))
-        logger.debug("line %d: %s", y, line)
-        for x, char in enumerate(line):
-            # if this is a numerical digit...
-            if char in digits:
-                if num_start is not None:
-                    # ... and we are on a streak of digits (aka at some point in a part number), continue
-                    continue
-                else:
-                    # ... and this is the first digit, start a part number
-                    num_start = x
-            # if this isn't a numerical digit, but the last column was, we've reached the end of a part number
-            elif num_start is not None:
-                p = process_part_num(y, num_start, x, schematic)
-                if p is not None:
-                    part_nums[p] += 1
-                # reset for a new part number
-                num_start = None
+        # find all the part numbers
+        for match in re.finditer(part_num_re, line):
+            part_nums[(y, match.start(), match.end())] = int(match.group())
+        # and find all fo the symbols
+        for x in range(len(line)):
+            symbols.add((y, x))
 
-    return sum(k*v for k, v in part_nums.items())
-
+    return sum([pn for coord, pn in part_nums.items() if process_part_num(*coord, schematic)])
 
 
 
