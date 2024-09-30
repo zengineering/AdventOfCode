@@ -9,7 +9,7 @@ from typing import Iterable
 logger = structlog.get_logger()
 
 digits = set(string.digits)
-symbols = [s for s in string.punctuation if s != '.']
+symbols = set(s for s in string.punctuation if s != '.')
 part_num_re = re.compile(r"(\d+)")
 
 def save_input(puzzle_input: Iterable[str]) -> list[str]:
@@ -37,25 +37,39 @@ def process_part_num(y: int, x0: int, xn: int, schematic: list[list[str]]) -> in
 
     # if any neighbor is a symbol, count the part number
     return any(map(lambda y_x: schematic[y_x[0]][y_x[1]] in symbols, neighbors))
-        
 
-def three_one(puzzle_input: Iterable[str]) -> int:
+
+def three_one(puzzle_input: list[str]) -> int:
     part_nums: dict[tuple[int, int, int], int] = {}
-    symbols: set[tuple[int, int]] = set()
+
+    # for each row...
+    for y, line in enumerate(puzzle_input):
+        # find all the part numbers
+        for match in re.finditer(part_num_re, line):
+            part_nums[(y, match.start(), match.end())] = int(match.group())
+
+    return sum([pn for coord, pn in part_nums.items() if process_part_num(*coord, puzzle_input)])
+
+
+
+def three_two(puzzle_input: list[str]) -> int:
+    part_nums_edges: dict[tuple[int, int], int] = {}
+    symbols: dict[tuple[int, int], int] = {}
     schematic = save_input(puzzle_input)
 
     # for each row...
     for y, line in enumerate(schematic):
         # find all the part numbers
         for match in re.finditer(part_num_re, line):
-            part_nums[(y, match.start(), match.end())] = int(match.group())
+            for yi in range(y-1, y+2):
+                for xi in range(match.start(), match.end()):
+                    part_nums_edges[(yi, xi)] = int(match.group())
         # and find all fo the symbols
-        for x in range(len(line)):
-            symbols.add((y, x))
+        for x, char in enumerate(range(len(line))):
+            symbols[(y, x)] = char
 
-    return sum([pn for coord, pn in part_nums.items() if process_part_num(*coord, schematic)])
+    return sum(part_nums.get(coord, 0) for coord in symbols.keys())
+    for coord in symbols.keys():
+        pass
 
 
-
-def three_two(puzzle_input: list[str]) -> int:
-    pass
