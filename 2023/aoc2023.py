@@ -21,7 +21,7 @@ def get_all_input(f: click.File) -> Iterable[str]:
     :param f: click.File from which to read input
     :returns: list of lines in the provided file
     """
-    return filter(lambda x: x, map(lambda x: x.strip(), f.readlines()))
+    return [line.strip() for line in f.readlines() if line.strip()]
 
 
 def configure_logging(preferredLevel: str | None = None, defaultLevel=logging.WARN, no_color: bool = False):
