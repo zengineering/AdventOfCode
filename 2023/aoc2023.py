@@ -10,7 +10,8 @@ commands = {
     "1.2": one_two,
     "2.1": two_one,
     "2.2": two_two,
-    "3.1": three_one
+    "3.1": three_one,
+    "3.2": three_two,
 }
 
 
